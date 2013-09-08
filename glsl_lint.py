@@ -1,7 +1,6 @@
-# GameMonkey Linter: https://github.com/eddietree/gm-lint
+# GameMonkey Linter: https://github.com/eddietree/glsl-lint
 import subprocess, os, re, sys
 import sublime, sublime_plugin
-
 
 class LintCommandBase(sublime_plugin.TextCommand):
 	def highlight_line(self, line_number):
@@ -46,7 +45,7 @@ class LintCommandBase(sublime_plugin.TextCommand):
 		if ( line_number == None ):
 			success_msg = self.command_name + ": Compiled success!"
 			print (success_msg)
-			self.view.set_status("gm-lint", success_msg)
+			self.view.set_status(self.command_name, success_msg)
 
 		else:
 			self.handle_compile_fail( line_number, compile_error_msg )
@@ -95,7 +94,11 @@ class GlslLintCommand(LintCommandBase):
 			match = re.match( r'[^(]*\(([0-9]*)\)(.*)\r?', output_string, re.M|re.I  )
 
 			if match:
-				line_offset = 4  # -4 because of setted vars
+
+				# get line offset, because sometimes user adds extra command lines when compiling
+				s = sublime.load_settings("Preferences.sublime-settings")
+				line_offset = s.get("glsl_lint_numlines_offset", 4)
+
 				line_number = int(match.group(1)) - line_offset
 				compile_error_msg = match.group(2)
 				#print(match.group(1))
